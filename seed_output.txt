@@ -1,0 +1,35 @@
+Seeding database...
+Admin user created: admin@unik.com
+PrismaClientKnownRequestError: 
+Invalid `prisma.product.create()` invocation in
+/Users/kirillsamohin/Downloads/stitch/furniture-shop/prisma/seed.ts:177:30
+
+  174 ];
+  175 
+  176 for (const product of products) {
+→ 177     await prisma.product.create(
+The column `specifications` does not exist in the current database.
+    at zr.handleRequestError (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client/src/runtime/RequestHandler.ts:228:13)
+    at zr.handleAndLogRequestError (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12)
+    at zr.request (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12)
+    at async a (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:807:24)
+    at async main (/Users/kirillsamohin/Downloads/stitch/furniture-shop/prisma/seed.ts:177:9) {
+  code: 'P2022',
+  meta: {
+    modelName: 'Product',
+    driverAdapterError: DriverAdapterError: ColumnNotFound
+        at PrismaBetterSqlite3Adapter.onError (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/adapter-better-sqlite3/dist/index.js:568:11)
+        at PrismaBetterSqlite3Adapter.performIO (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/adapter-better-sqlite3/dist/index.js:563:12)
+        at PrismaBetterSqlite3Adapter.queryRaw (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/adapter-better-sqlite3/dist/index.js:504:63)
+        at callback (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:184:16)
+        at withQuerySpanAndEvent (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/tracing.ts:80:12)
+        at e.#withQuerySpanAndEvent (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:363:12)
+        at e.interpretNode (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:182:37)
+        at e.interpretNode (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:209:52)
+        at e.interpretNode (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:127:21)
+        at async e.interpretNode (/Users/kirillsamohin/Downloads/stitch/furniture-shop/node_modules/@prisma/client-engine-runtime/src/interpreter/query-interpreter.ts:268:41) {
+      cause: [Object]
+    }
+  },
+  clientVersion: '7.4.0'
+}

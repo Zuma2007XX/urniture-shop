@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: white;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes burn {
+
+  0%,
+  100% {
+    text-shadow:
+      0 -0.1em 0.2em #FFF,
+      0 -0.2em 0.4em #FF3,
+      0 -0.4em 0.6em #F90,
+      0 -0.6em 0.8em #C30;
+  }
+
+  25% {
+    text-shadow:
+      -0.05em -0.15em 0.2em #FFF,
+      -0.1em -0.25em 0.4em #FF3,
+      -0.2em -0.45em 0.6em #F90,
+      -0.3em -0.65em 0.8em #C30;
+  }
+
+  50% {
+    text-shadow:
+      0 -0.1em 0.2em #FFF,
+      0 -0.2em 0.4em #FF3,
+      0 -0.4em 0.6em #F90,
+      0 -0.6em 0.8em #C30;
+  }
+
+  75% {
+    text-shadow:
+      0.05em -0.15em 0.2em #FFF,
+      0.1em -0.25em 0.4em #FF3,
+      0.2em -0.45em 0.6em #F90,
+      0.3em -0.65em 0.8em #C30;
+  }
+}
+
+.group:hover .fire-hover {
+  animation: burn 0.3s infinite alternate;
+  color: #000;
+}

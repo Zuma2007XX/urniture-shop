@@ -1,0 +1,3 @@
+🤖 Telegram Bot Server is running...
+Listening for commands from Admin ID: 962465878
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: Error: read ECONNRESET"}

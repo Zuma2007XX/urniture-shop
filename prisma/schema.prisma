@@ -1,0 +1,183 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  name          String?
+  image         String?
+  role          String    @default("customer")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  orders        Order[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  name           String
+  nameEn         String?
+  nameRu         String?
+  nameBg         String?
+  description    String
+  descriptionEn  String?
+  descriptionRu  String?
+  descriptionBg  String?
+  price          Float
+  images         String
+  category       String
+  stock          Int         @default(0)
+  featured       Boolean     @default(false)
+  isNew          Boolean     @default(false)
+  series         String?
+  badge          String?
+  material       String?
+  frame          String?
+  upholstery     String?
+  loadLimit      String?
+  assembly       String?
+  recyclability  String?
+  warranty       String?
+  concept        String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  collectionId   String?
+  specifications String?
+  categoryId     String?
+  sku            String?     @unique
+  orderItems     OrderItem[]
+  categoryRel    Category?   @relation(fields: [categoryId], references: [id])
+  collection     Collection? @relation(fields: [collectionId], references: [id])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  nameEn    String?
+  nameRu    String?
+  nameBg    String?
+  slug      String    @unique
+  image     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Collection {
+  id          String    @id @default(cuid())
+  title         String
+  titleEn       String?
+  titleRu       String?
+  titleBg       String?
+  slug          String    @unique
+  description   String?
+  descriptionEn String?
+  descriptionRu String?
+  descriptionBg String?
+  image         String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  variants    String?
+  products    Product[]
+}
+
+model Color {
+  id        String   @id @default(cuid())
+  name      String
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  section   String   @unique
+  title     String?
+  titleEn   String?
+  titleRu   String?
+  titleBg   String?
+  subtitle  String?
+  body      String?
+  bodyEn    String?
+  bodyRu    String?
+  bodyBg    String?
+  image     String?
+  linkText  String?
+  linkUrl   String?
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String?
+  status    String      @default("pending")
+  total     Float
+
+  // Contact Info
+  firstName String
+  lastName  String
+  phone     String
+  email     String
+
+  // Delivery Info
+  deliveryMethod String
+  city           String?
+  branch         String?
+  address        String?
+
+  // Payment Info
+  paymentMethod  String
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User?       @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  colorName String?
+  
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
