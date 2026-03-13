@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { sendTelegramMessage } from '@/lib/telegram';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const adminId = process.env.TELEGRAM_ADMIN_ID;
