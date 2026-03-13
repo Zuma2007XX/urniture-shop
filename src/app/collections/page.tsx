@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function CollectionsPage() {
     const collections = await prisma.collection.findMany({
+        where: { isActive: true },
         orderBy: { createdAt: 'desc' },
         include: { _count: { select: { products: true } } }
     });

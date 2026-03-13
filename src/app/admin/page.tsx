@@ -8,13 +8,13 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/admin/products')
+        fetch('/api/admin/stats')
             .then(r => r.json())
-            .then(products => {
+            .then(data => {
                 setStats({
-                    products: products.length,
-                    orders: 0,
-                    revenue: 0,
+                    products: data.products,
+                    orders: data.orders,
+                    revenue: data.revenue,
                 });
                 setLoading(false);
             })

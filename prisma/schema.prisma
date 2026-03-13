@@ -34,8 +34,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -72,26 +71,27 @@ model Product {
   specifications String?
   categoryId     String?
   sku            String?     @unique
+  isActive       Boolean     @default(true)
   orderItems     OrderItem[]
-  categoryRel    Category?   @relation(fields: [categoryId], references: [id])
   collection     Collection? @relation(fields: [collectionId], references: [id])
+  categoryRel    Category?   @relation(fields: [categoryId], references: [id])
 }
 
 model Category {
   id        String    @id @default(cuid())
   name      String
-  nameEn    String?
-  nameRu    String?
-  nameBg    String?
   slug      String    @unique
   image     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  nameBg    String?
+  nameEn    String?
+  nameRu    String?
   products  Product[]
 }
 
 model Collection {
-  id          String    @id @default(cuid())
+  id            String    @id @default(cuid())
   title         String
   titleEn       String?
   titleRu       String?
@@ -102,10 +102,11 @@ model Collection {
   descriptionRu String?
   descriptionBg String?
   image         String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  variants    String?
-  products    Product[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  variants      String?
+  isActive      Boolean   @default(true)
+  products      Product[]
 }
 
 model Color {
@@ -120,45 +121,40 @@ model SiteContent {
   id        String   @id @default(cuid())
   section   String   @unique
   title     String?
-  titleEn   String?
-  titleRu   String?
-  titleBg   String?
   subtitle  String?
   body      String?
-  bodyEn    String?
-  bodyRu    String?
-  bodyBg    String?
   image     String?
   linkText  String?
   linkUrl   String?
   updatedAt DateTime @updatedAt
+  bodyBg    String?
+  bodyEn    String?
+  bodyRu    String?
+  titleBg   String?
+  titleEn   String?
+  titleRu   String?
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String?
-  status    String      @default("pending")
-  total     Float
-
-  // Contact Info
-  firstName String
-  lastName  String
-  phone     String
-  email     String
-
-  // Delivery Info
+  id             String      @id @default(cuid())
+  orderNumber    String?     @unique
+  userId         String?
+  status         String      @default("pending")
+  total          Float
+  firstName      String
+  lastName       String
+  phone          String
+  email          String
   deliveryMethod String
   city           String?
   branch         String?
   address        String?
-
-  // Payment Info
   paymentMethod  String
-
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  user      User?       @relation(fields: [userId], references: [id])
-  items     OrderItem[]
+  read           Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  user           User?       @relation(fields: [userId], references: [id])
+  items          OrderItem[]
 }
 
 model OrderItem {
@@ -168,7 +164,6 @@ model OrderItem {
   quantity  Int
   price     Float
   colorName String?
-  
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

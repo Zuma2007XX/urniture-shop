@@ -1,10 +1,10 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
@@ -21,6 +21,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             router.push('/');
         }
     }, [status, session, router, isLoginPage]);
+
+    // ─── Unread Counts Logic ──────────────────────────────────────────────
+    const [unread, setUnread] = useState({ orders: 0, messages: 0 });
+
+    const fetchCounts = async () => {
+        try {
+            const res = await fetch('/api/admin/unread-counts');
+            if (res.ok) {
+                const data = await res.json();
+                setUnread(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch unread counts:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (status === 'authenticated' && session?.user?.role === 'admin' && !isLoginPage) {
+            fetchCounts();
+            // Optional: poll every minute
+            const interval = setInterval(fetchCounts, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [status, session, isLoginPage]);
+
+    // Expose refresh function to children via context or window event if needed
+    // For now simple polling + manual refresh on page navigation
+    useEffect(() => {
+        const handleRefresh = () => {
+            fetchCounts();
+        };
+        window.addEventListener('admin-refresh-counts', handleRefresh);
+        return () => window.removeEventListener('admin-refresh-counts', handleRefresh);
+    }, [status, session]);
 
     // Login page renders without the sidebar
     if (isLoginPage) {
@@ -50,7 +84,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <p className="text-[11px] text-gray-400 uppercase tracking-widest mt-1">Адмін-панель</p>
                 </div>
 
-                <nav className="flex-1 py-6">
+                <nav className="flex-1 py-6 overflow-y-auto">
                     <Link
                         href="/admin"
                         className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors ${pathname === '/admin' ? 'text-white bg-gray-800/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}
@@ -68,6 +102,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                         </svg>
                         Товари
+                    </Link>
+                    <Link
+                        href="/admin/sales"
+                        className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors ${pathname.startsWith('/admin/sales') ? 'text-white bg-gray-800/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                        </svg>
+                        Продажі
+                    </Link>
+                    <Link
+                        href="/admin/orders"
+                        className={`flex items-center justify-between px-6 py-3 transition-colors ${pathname.startsWith('/admin/orders') ? 'text-white bg-gray-800/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}
+                    >
+                        <div className="flex items-center gap-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
+                            </svg>
+                            Замовлення
+                        </div>
+                        {unread.orders > 0 && (
+                            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center">
+                                {unread.orders}
+                            </span>
+                        )}
                     </Link>
                     <Link
                         href="/admin/content"
@@ -108,12 +167,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </Link>
                     <Link
                         href="/admin/messages"
-                        className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors ${pathname.startsWith('/admin/messages') ? 'text-white bg-gray-800/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}
+                        className={`flex items-center justify-between px-6 py-3 transition-colors ${pathname.startsWith('/admin/messages') ? 'text-white bg-gray-800/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                        </svg>
-                        Повідомлення
+                        <div className="flex items-center gap-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                            </svg>
+                            Повідомлення
+                        </div>
+                        {unread.messages > 0 && (
+                            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center">
+                                {unread.messages}
+                            </span>
+                        )}
                     </Link>
                     <Link
                         href="/admin/contacts"

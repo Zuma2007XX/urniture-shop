@@ -94,3 +94,26 @@ export async function DELETE(
         return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
     }
 }
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+    const session = await getAdminSession();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const data = await req.json();
+        const product = await prisma.product.update({
+            where: { id },
+            data,
+        });
+        return NextResponse.json(product);
+    } catch (error) {
+        console.error('Failed to patch product:', error);
+        return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+    }
+}

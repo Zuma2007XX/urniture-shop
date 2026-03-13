@@ -1,11 +1,13 @@
 'use client';
 
 import { useCart } from '@/context/CartContext';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Cart() {
     const { items, removeItem, updateQuantity, total } = useCart();
+    const { status } = useSession();
 
     if (items.length === 0) {
         return (
@@ -25,6 +27,38 @@ export default function Cart() {
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold mb-8">Кошик</h1>
+
+            {status === 'unauthenticated' && (
+                <div className="mb-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                    <div className="flex items-center gap-5 text-left flex-1">
+                        <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0 border border-blue-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Слідкуйте за своїм замовленням</h2>
+                            <p className="text-gray-600 text-sm mt-1 max-w-md">
+                                Увійдіть або зареєструйтеся, щоб мати можливість відстежувати статус вашого замовлення в особистому кабінеті.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4 shrink-0 w-full md:w-auto">
+                        <Link
+                            href={`/auth/signin?callbackUrl=/cart`}
+                            className="flex-1 md:flex-none bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all text-center"
+                        >
+                            Увійти
+                        </Link>
+                        <Link
+                            href={`/auth/register?callbackUrl=/cart`}
+                            className="flex-1 md:flex-none bg-white text-gray-900 border border-gray-200 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all text-center shadow-sm"
+                        >
+                            Зареєструватися
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Cart Items */}

@@ -46,6 +46,8 @@ export default function AdminMessagesPage() {
             if (selectedMessage?.id === msg.id) {
                 setSelectedMessage({ ...msg, read: !msg.read });
             }
+            // Trigger sidebar refresh
+            window.dispatchEvent(new CustomEvent('admin-refresh-counts'));
         } catch (err) {
             console.error(err);
         }
@@ -57,6 +59,8 @@ export default function AdminMessagesPage() {
             await fetch(`/api/admin/messages?id=${id}`, { method: 'DELETE' });
             setMessages(prev => prev.filter(m => m.id !== id));
             if (selectedMessage?.id === id) setSelectedMessage(null);
+            // Trigger sidebar refresh
+            window.dispatchEvent(new CustomEvent('admin-refresh-counts'));
         } catch (err) {
             console.error(err);
         }
@@ -70,6 +74,8 @@ export default function AdminMessagesPage() {
                 body: JSON.stringify({ id: msg.id, read: true }),
             });
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, read: true } : m));
+            // Trigger sidebar refresh
+            window.dispatchEvent(new CustomEvent('admin-refresh-counts'));
         }
         setSelectedMessage({ ...msg, read: true });
     };
@@ -122,8 +128,8 @@ export default function AdminMessagesPage() {
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === f
-                                ? 'bg-black text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-black text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
                         {f === 'all' ? `Усі (${messages.length})` :
@@ -150,17 +156,17 @@ export default function AdminMessagesPage() {
                                 key={msg.id}
                                 onClick={() => markAsRead(msg)}
                                 className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${selectedMessage?.id === msg.id
-                                        ? 'border-black bg-gray-50 shadow-sm'
-                                        : msg.read
-                                            ? 'border-gray-100 hover:border-gray-200 bg-white'
-                                            : 'border-blue-200 bg-blue-50/50 hover:border-blue-300'
+                                    ? 'border-black bg-gray-50 shadow-sm'
+                                    : msg.read
+                                        ? 'border-gray-100 hover:border-gray-200 bg-white'
+                                        : 'border-blue-200 bg-blue-50/50 hover:border-blue-300'
                                     }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             {!msg.read && (
-                                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                                                <div className="w-2.5 h-2.5 bg-blue-500 rounded-full flex-shrink-0 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                                             )}
                                             <span className={`font-semibold text-sm truncate ${!msg.read ? 'text-black' : 'text-gray-700'}`}>
                                                 {msg.name}

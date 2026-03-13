@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const series = searchParams.get('series');
 
     try {
-        const where: any = {};
+        const where: any = { isActive: true };
         if (category && category !== 'all') where.category = category;
         if (series) {
             if (series.includes(',')) {
@@ -20,7 +20,8 @@ export async function GET(req: Request) {
             }
         }
 
-        const search = searchParams.get('search');
+        const rawSearch = searchParams.get('search');
+        const search = rawSearch ? decodeURIComponent(rawSearch) : null;
         if (search) {
             const searchLower = search.toLowerCase();
             const searchCap = searchLower.charAt(0).toUpperCase() + searchLower.slice(1);
@@ -28,6 +29,9 @@ export async function GET(req: Request) {
 
             // Base conditions for original term
             const orConditions: any[] = [
+                { sku: { contains: search } },
+                { sku: { contains: searchLower } },
+                { sku: { contains: searchUpper } },
                 { name: { contains: search } },
                 { description: { contains: search } },
                 { series: { contains: search } },
@@ -38,6 +42,7 @@ export async function GET(req: Request) {
                 { description: { contains: searchCap } },
                 { category: { contains: searchCap } },
                 { name: { contains: searchUpper } },
+                { description: { contains: searchUpper } }
             ];
 
             // Add translation conditions

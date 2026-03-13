@@ -37,7 +37,7 @@ export const dictionaries: Record<Language, any> = {
             hero: {
                 title: 'СТВОРЮЄМО\nКОМФОРТ',
                 subtitle: 'Архітектура вашого комфорту. Серії, що визначають простір.',
-                button: 'Дивитись все'
+                button: 'Дивитись каталог'
             },
             featured: {
                 title: 'Хіти продажу',

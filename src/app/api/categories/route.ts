@@ -13,6 +13,7 @@ export async function GET() {
         // Compute counts based on the 'category' string field (slug), not 'categoryId' relation
         const productCounts = await prisma.product.groupBy({
             by: ['category'],
+            where: { isActive: true },
             _count: {
                 id: true
             }

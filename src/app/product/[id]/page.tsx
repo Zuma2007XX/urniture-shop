@@ -102,6 +102,24 @@ export default function ProductPage() {
         }
     }, [product?.series, product?.id]);
 
+    const [categories, setCategories] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setCategories(data);
+                }
+            })
+            .catch(err => console.error('Error fetching categories:', err));
+    }, []);
+
+    const getCategoryName = (slug: string) => {
+        const cat = categories.find(c => c.slug === slug);
+        return cat ? getLocalizedField(cat, 'name', language) : slug;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -122,9 +140,6 @@ export default function ProductPage() {
     }
 
     const images = JSON.parse(product.images || '[]');
-    const categoryLabels: Record<string, string> = {
-        chairs: 'Крісла', tables: 'Столи', lamps: 'Лампи', sofas: 'Дивани', decor: 'Декор',
-    };
 
     const handleAddToCart = () => {
         addItem({
@@ -160,7 +175,7 @@ export default function ProductPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 pb-20 border-b border-gray-100 mt-6">
                 {/* Left Column: Images */}
 
-                <div className="flex flex-col gap-4 sticky top-24 h-fit">
+                <div className="flex flex-col gap-4 lg:sticky lg:top-24 h-fit">
                     {/* Main Image Carousel */}
                     <div className="relative aspect-[4/5] bg-transparent rounded-sm overflow-hidden group">
                         {/* Show preview if available, otherwise active image */}
@@ -231,7 +246,7 @@ export default function ProductPage() {
                         <span className="mx-2">›</span>
                         <Link href="/catalog" className="hover:text-black transition-colors">МЕБЛІ</Link>
                         <span className="mx-2">›</span>
-                        <span className="text-black">{categoryLabels[product.category] || product.category}</span>
+                        <span className="text-black">{getCategoryName(product.category)}</span>
                     </nav>
 
                     {/* Title */}
@@ -240,8 +255,8 @@ export default function ProductPage() {
                     </h1>
 
                     {/* Short Description */}
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6 max-w-md">
-                        {getLocalizedField(product, 'description', language)}
+                    <p className="text-sm text-gray-500 leading-relaxed mb-6 max-w-md line-clamp-3">
+                        {getLocalizedField(product, 'description', language)?.split('\n')[0]}
                     </p>
 
                     {/* Price */}
@@ -310,8 +325,17 @@ export default function ProductPage() {
                                                     className={`flex flex-col items-center gap-2 group cursor-pointer ${isActive ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`}
                                                     title={color.name}
                                                     onMouseEnter={() => {
-                                                        if (color.siblingProd && color.images && color.images.length > 0) {
-                                                            setPreviewImage(color.images[0]);
+                                                        if (color.siblingProd) {
+                                                            let siblingImages = [];
+                                                            try {
+                                                                siblingImages = JSON.parse(color.siblingProd.images || '[]');
+                                                            } catch (e) { }
+
+                                                            if (siblingImages.length > 0) {
+                                                                setPreviewImage(siblingImages[0]);
+                                                            } else if (color.images && color.images.length > 0) {
+                                                                setPreviewImage(color.images[0]);
+                                                            }
                                                         }
                                                     }}
                                                     onMouseLeave={() => setPreviewImage(null)}
@@ -396,9 +420,15 @@ export default function ProductPage() {
 
                         <div className="min-h-[400px] text-sm text-gray-500 leading-relaxed">
                             {openSection === 'desc' && (
-                                <div className="animate-fadeIn">
-                                    <p className="mb-4">{getLocalizedField(product, 'description', language)}</p>
-                                    <p>{product.concept}</p>
+                                <div className="animate-fadeIn pb-4">
+                                    <div
+                                        className="mb-4 whitespace-pre-line text-sm text-gray-600 leading-relaxed space-y-2 [&>strong]:text-black"
+                                        dangerouslySetInnerHTML={{
+                                            __html: (getLocalizedField(product, 'description', language) || '')
+                                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        }}
+                                    />
+                                    {product.concept && <p className="mt-4 italic">{product.concept}</p>}
                                 </div>
                             )}
                             {openSection === 'specs' && (

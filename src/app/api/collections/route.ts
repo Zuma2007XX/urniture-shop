@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const collections = await prisma.collection.findMany({
+            where: { isActive: true },
             orderBy: { createdAt: 'desc' },
             include: {
                 _count: {

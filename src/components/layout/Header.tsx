@@ -34,14 +34,15 @@ export default function Header() {
 
     // Fetch categories and collections for dropdowns
     useEffect(() => {
-        fetch('/api/categories')
+        const timestamp = Date.now();
+        fetch(`/api/categories?t=${timestamp}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) setCategories(data);
             })
             .catch(err => console.error("Failed to fetch categories", err));
 
-        fetch('/api/collections')
+        fetch(`/api/collections?t=${timestamp}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) setCollections(data);

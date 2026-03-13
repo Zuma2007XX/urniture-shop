@@ -14,6 +14,7 @@ interface Product {
     badge: string | null;
     images: string;
     createdAt: string;
+    isActive: boolean;
 }
 
 export default function AdminProducts() {
@@ -54,6 +55,17 @@ export default function AdminProducts() {
             alert('Не вдалося видалити товар. Можливо, він є в замовленнях.');
         }
         setDeleting(null);
+    };
+
+    const handleToggleActive = async (id: string, current: boolean) => {
+        const res = await fetch(`/api/admin/products/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isActive: !current })
+        });
+        if (res.ok) {
+            setProducts(products.map(p => p.id === id ? { ...p, isActive: !current } : p));
+        }
     };
 
     const filtered = products.filter(p =>
@@ -113,6 +125,7 @@ export default function AdminProducts() {
                                 <th className="text-left text-[11px] uppercase tracking-widest text-gray-500 font-medium px-6 py-4">Ціна</th>
                                 <th className="text-left text-[11px] uppercase tracking-widest text-gray-500 font-medium px-6 py-4">Склад</th>
                                 <th className="text-left text-[11px] uppercase tracking-widest text-gray-500 font-medium px-6 py-4">Бейдж</th>
+                                <th className="text-left text-[11px] uppercase tracking-widest text-gray-500 font-medium px-6 py-4">Активний</th>
                                 <th className="text-right text-[11px] uppercase tracking-widest text-gray-500 font-medium px-6 py-4">Дії</th>
                             </tr>
                         </thead>
@@ -159,6 +172,14 @@ export default function AdminProducts() {
                                             ) : (
                                                 <span className="text-gray-300">—</span>
                                             )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <button
+                                                onClick={() => handleToggleActive(product.id, product.isActive)}
+                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${product.isActive ? 'bg-black' : 'bg-gray-200'}`}
+                                            >
+                                                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${product.isActive ? 'translate-x-4.5' : 'translate-x-1'}`} />
+                                            </button>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-end gap-2">

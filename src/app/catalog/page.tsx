@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import CatalogProductCard from "@/components/catalog/CatalogProductCard";
 import Pagination from "@/components/ui/Pagination";
+import SortDropdown from "@/components/ui/SortDropdown";
 import { ProductMinimal } from "@/lib/product-utils";
 import { useLanguage } from '@/context/LanguageContext';
 import { getLocalizedField } from '@/lib/translateDb';
@@ -36,8 +37,9 @@ import { Suspense } from 'react';
 
 function CatalogContent() {
     const { language, t } = useLanguage();
-    const searchParams = useSearchParams(); // Hook to read query params
-    const searchQuery = searchParams?.get('search'); // Get 'search' param
+    const searchParams = useSearchParams();
+    const rawSearchQuery = searchParams?.get('search');
+    const searchQuery = rawSearchQuery ? decodeURIComponent(rawSearchQuery) : null;
 
     const [categories, setCategories] = useState<Category[]>([
         { id: "all", name: 'all', slug: "all" } // Use slug as name placeholder for now, will translate in render
@@ -87,11 +89,19 @@ function CatalogContent() {
         fetch(`/api/products?${params.toString()}`)
             .then(r => r.json())
             .then(data => {
-                setProducts(data);
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                } else {
+                    console.error('Expected array of products, got:', data);
+                    setProducts([]);
+                }
                 setLoading(false);
                 setCurrentPage(1); // Reset to first page on category change
             })
-            .catch(() => setLoading(false));
+            .catch(() => {
+                setProducts([]);
+                setLoading(false);
+            });
     }, [activeCategory, searchQuery]);
 
     // Fetch variants for visible products
@@ -176,17 +186,17 @@ function CatalogContent() {
                 </button>
 
                 {/* Sort dropdown */}
-                <div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
-                    <span>{t('catalog.sort.label')}</span>
-                    <select
+                <div className="ml-auto flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                    <span className="hidden sm:inline-block">{t('catalog.sort.label')}</span>
+                    <SortDropdown
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="bg-transparent font-medium text-black outline-none cursor-pointer"
-                    >
-                        <option value="new">{t('catalog.sort.new')}</option>
-                        <option value="price-asc">{t('catalog.sort.price_asc')}</option>
-                        <option value="price-desc">{t('catalog.sort.price_desc')}</option>
-                    </select>
+                        onChange={setSortBy}
+                        options={[
+                            { value: 'new', label: t('catalog.sort.new') },
+                            { value: 'price-asc', label: t('catalog.sort.price_asc') },
+                            { value: 'price-desc', label: t('catalog.sort.price_desc') }
+                        ]}
+                    />
                 </div>
             </div>
 

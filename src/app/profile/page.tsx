@@ -2,16 +2,40 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'pending': return { label: 'Очікує підтвердження', style: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+        case 'confirmed': return { label: 'Підтверджено', style: 'bg-blue-100 text-blue-800 border-blue-200' };
+        case 'processing': return { label: 'В роботі', style: 'bg-purple-100 text-purple-800 border-purple-200' };
+        case 'shipped': return { label: 'Відправлено', style: 'bg-indigo-100 text-indigo-800 border-indigo-200' };
+        case 'completed': return { label: 'Виконано', style: 'bg-green-100 text-green-800 border-green-200' };
+        case 'cancelled': return { label: 'Скасовано', style: 'bg-red-100 text-red-800 border-red-200' };
+        default: return { label: status, style: 'bg-gray-100 text-gray-800 border-gray-200' };
+    }
+};
 
 export default function ProfilePage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loadingOrders, setLoadingOrders] = useState(true);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/auth/signin');
+        } else if (status === 'authenticated') {
+            fetch('/api/user/orders')
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setOrders(data);
+                    }
+                })
+                .catch(console.error)
+                .finally(() => setLoadingOrders(false));
         }
     }, [status, router]);
 
@@ -100,23 +124,93 @@ export default function ProfilePage() {
                                 Історія замовлень
                             </h3>
 
-                            <div className="flex flex-col items-center justify-center text-center h-full pt-12 pb-20">
-                                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-10 h-10 text-gray-300">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
+                            {loadingOrders ? (
+                                <div className="flex items-center justify-center h-full pt-12 pb-20">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
                                 </div>
-                                <h4 className="text-lg font-medium text-gray-900">У вас поки немає замовлень</h4>
-                                <p className="mt-2 text-sm text-gray-500 max-w-[250px]">
-                                    Коли ви оформите своє перше замовлення, воно з'явиться тут.
-                                </p>
-                                <Link
-                                    href="/catalog"
-                                    className="mt-8 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
-                                >
-                                    Перейти до каталогу
-                                </Link>
-                            </div>
+                            ) : orders.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center text-center h-full pt-12 pb-20">
+                                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-10 h-10 text-gray-300">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="text-lg font-medium text-gray-900">У вас поки немає замовлень</h4>
+                                    <p className="mt-2 text-sm text-gray-500 max-w-[250px]">
+                                        Коли ви оформите своє перше замовлення, воно з'явиться тут.
+                                    </p>
+                                    <Link
+                                        href="/catalog"
+                                        className="mt-8 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+                                    >
+                                        Перейти до каталогу
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {orders.map((order) => {
+                                        const statusInfo = getStatusLabel(order.status);
+                                        return (
+                                            <div key={order.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow bg-gray-50/50">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-100">
+                                                    <div>
+                                                        <p className="text-sm text-gray-500 mb-1">Замовлення #{order.orderNumber || order.id.slice(-6).toUpperCase()}</p>
+                                                        <p className="text-sm font-medium text-gray-900">
+                                                            {new Date(order.createdAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                    <div className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${statusInfo.style} flex-shrink-0 w-fit`}>
+                                                        {statusInfo.label}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {order.items.map((item: any) => {
+                                                        let imageUrl = null;
+                                                        try {
+                                                            if (item.product?.images) {
+                                                                const parsed = JSON.parse(item.product.images);
+                                                                if (parsed.length > 0) imageUrl = parsed[0];
+                                                            }
+                                                        } catch (e) { }
+
+                                                        return (
+                                                            <div key={item.id} className="flex items-center gap-4">
+                                                                <div className="w-16 h-16 bg-white rounded-lg border border-gray-100 flex items-center justify-center p-1 flex-shrink-0">
+                                                                    {imageUrl ? (
+                                                                        <img
+                                                                            src={imageUrl}
+                                                                            alt={item.product?.name || 'Товар'}
+                                                                            className="w-full h-full object-contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-full h-full bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">Фото</div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h5 className="text-sm font-medium text-gray-900 truncate">{item.product?.name || 'Товар видалено'}</h5>
+                                                                    {item.colorName && (
+                                                                        <p className="text-xs text-gray-500 mt-0.5">Колір: {item.colorName}</p>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-right flex-shrink-0">
+                                                                    <p className="text-sm font-medium text-gray-900">{item.price.toLocaleString('uk-UA')} ₴</p>
+                                                                    <p className="text-xs text-gray-500 mt-0.5">{item.quantity} шт.</p>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+
+                                                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                                                    <span className="text-sm font-medium text-gray-500">Загальна сума:</span>
+                                                    <span className="text-lg font-bold text-gray-900">{order.total.toLocaleString('uk-UA')} ₴</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import CatalogProductCard from "@/components/catalog/CatalogProductCard";
 import Pagination from "@/components/ui/Pagination";
+import SortDropdown from "@/components/ui/SortDropdown";
 import { ProductMinimal } from "@/lib/product-utils";
 
 interface Category {
@@ -185,17 +186,17 @@ export default function CollectionProducts({ products: initialProducts }: { prod
                 ))}
 
                 {/* Sort dropdown */}
-                <div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
-                    <span>Сортувати:</span>
-                    <select
+                <div className="ml-auto flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                    <span className="hidden sm:inline-block">Сортувати:</span>
+                    <SortDropdown
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="bg-transparent font-medium text-black outline-none cursor-pointer"
-                    >
-                        <option value="new">Новинки</option>
-                        <option value="price-asc">Ціна ↑</option>
-                        <option value="price-desc">Ціна ↓</option>
-                    </select>
+                        onChange={setSortBy}
+                        options={[
+                            { value: 'new', label: 'Новинки' },
+                            { value: 'price-asc', label: 'Ціна ↑' },
+                            { value: 'price-desc', label: 'Ціна ↓' }
+                        ]}
+                    />
                 </div>
             </div>
 

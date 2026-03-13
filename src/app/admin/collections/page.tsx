@@ -9,6 +9,7 @@ interface Collection {
     title: string;
     slug: string;
     image: string | null;
+    isActive: boolean;
     _count: {
         products: number;
     };
@@ -42,6 +43,17 @@ export default function AdminCollections() {
         }
     };
 
+    const handleToggleActive = async (id: string, current: boolean) => {
+        const res = await fetch(`/api/admin/collections/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isActive: !current })
+        });
+        if (res.ok) {
+            setCollections(collections.map(c => c.id === id ? { ...c, isActive: !current } : c));
+        }
+    };
+
     if (loading) return <div className="p-8">Завантаження...</div>;
 
     return (
@@ -67,6 +79,7 @@ export default function AdminCollections() {
                             <th className="px-6 py-4 font-medium">Назва</th>
                             <th className="px-6 py-4 font-medium">Slug (URL)</th>
                             <th className="px-6 py-4 font-medium">Товарів</th>
+                            <th className="px-6 py-4 font-medium">Активна</th>
                             <th className="px-6 py-4 font-medium text-right">Дії</th>
                         </tr>
                     </thead>
@@ -88,6 +101,14 @@ export default function AdminCollections() {
                                     <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium">
                                         {collection._count.products}
                                     </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <button
+                                        onClick={() => handleToggleActive(collection.id, collection.isActive)}
+                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${collection.isActive ? 'bg-black' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${collection.isActive ? 'translate-x-4.5' : 'translate-x-1'}`} />
+                                    </button>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <Link

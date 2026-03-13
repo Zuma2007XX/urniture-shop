@@ -11,13 +11,14 @@ export const dynamic = 'force-dynamic';
 export default async function Home() {
   // Get featured (bestseller) products first, fallback to latest 4
   let featuredProducts = await prisma.product.findMany({
-    where: { featured: true },
+    where: { featured: true, isActive: true },
     orderBy: { createdAt: 'desc' },
   });
 
   // Fallback: if no featured products, show latest 4
   if (featuredProducts.length === 0) {
     featuredProducts = await prisma.product.findMany({
+      where: { isActive: true },
       take: 4,
       orderBy: { createdAt: 'desc' },
     });
@@ -32,6 +33,7 @@ export default async function Home() {
   const allVariants = seriesIds.length > 0 ? await prisma.product.findMany({
     where: {
       series: { in: seriesIds },
+      isActive: true,
     },
     select: {
       id: true,
@@ -57,18 +59,19 @@ export default async function Home() {
   const newArrivalsTitle = getContent('new_arrivals_title');
   const collectionsTitle = getContent('collections_title');
   const collections = await prisma.collection.findMany({
+    where: { isActive: true },
     orderBy: { createdAt: 'desc' },
   });
 
   // Fetch New Arrivals (isNew = true)
   const newArrivalsProductsRaw = await prisma.product.findMany({
-    where: { isNew: true },
+    where: { isNew: true, isActive: true },
     orderBy: { createdAt: 'desc' },
   });
 
   const newArrivalsSeriesIds = Array.from(new Set(newArrivalsProductsRaw.map(p => p.series).filter(Boolean))) as string[];
   const newArrivalsVariants = newArrivalsSeriesIds.length > 0 ? await prisma.product.findMany({
-    where: { series: { in: newArrivalsSeriesIds } },
+    where: { series: { in: newArrivalsSeriesIds }, isActive: true },
     select: { id: true, name: true, images: true, series: true }
   }) : [];
 
@@ -82,23 +85,26 @@ export default async function Home() {
 
       {/* Hero Banner */}
       <section className="mt-8 mb-20">
-        <div className="relative w-full aspect-[16/7] rounded-lg overflow-hidden bg-gray-800">
+        <div className="relative w-full min-h-[500px] md:min-h-0 md:aspect-[16/7] rounded-lg overflow-hidden bg-gray-800">
           {hero?.image && (
             <Image
               src={hero.image}
               alt="Modern Interior"
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
             />
           )}
-          <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-16 pb-32">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[0.95] mb-5 tracking-tight whitespace-pre-line">
+          {/* Subtle overlay for better text readability on light images */}
+          <div className="absolute inset-0 bg-black/20 md:bg-black/10"></div>
+
+          <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 md:px-16 pt-8 pb-8 md:pb-0 z-10">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] md:leading-[0.95] mb-4 md:mb-5 tracking-tight whitespace-pre-line drop-shadow-md">
               <TranslatedText dictKey="home.hero.title" defaultText={hero?.title || 'СТВОРЮЄМО\nКОМФОРТ'} />
             </h1>
 
             {(hero?.subtitle || true) && (
-              <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-lg font-light tracking-wide">
+              <p className="text-base sm:text-lg md:text-xl text-white md:text-gray-100 mb-8 max-w-lg font-light tracking-wide drop-shadow-md">
                 <TranslatedText dictKey="home.hero.subtitle" defaultText={hero?.subtitle || undefined} />
               </p>
             )}
@@ -106,9 +112,9 @@ export default async function Home() {
             <div>
               <Link
                 href={hero?.linkUrl || '/catalog'}
-                className="inline-flex items-center gap-2 bg-black text-white text-sm font-medium px-7 py-3.5 rounded-full hover:bg-gray-900 transition-colors"
+                className="inline-flex items-center gap-2 bg-black text-white text-sm font-medium px-8 py-4 rounded-full hover:bg-gray-900 transition-transform active:scale-95 shadow-xl"
               >
-                <TranslatedText dictKey="home.hero.button" defaultText={hero?.linkText || 'Дивитись все'} />
+                <TranslatedText dictKey="home.hero.button" defaultText={hero?.linkText || 'Дивитись каталог'} />
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </svg>

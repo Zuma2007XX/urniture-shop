@@ -62,6 +62,20 @@ export default function CatalogProductCard({ product, variants, hideWishlist }: 
         setTimeout(() => setIsAdded(false), 2000);
     };
 
+    // Deterministic pseudo-random generation based on product ID
+    const generateRatingAndReviews = (id: string) => {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const absHash = Math.abs(hash);
+        const rating = (4.0 + (absHash % 11) / 10).toFixed(1);
+        const reviews = (absHash % 20) + 1; // 1 to 20
+        return { rating, reviews };
+    };
+
+    const { rating, reviews } = generateRatingAndReviews(product.id);
+
     return (
         <div className="group/card relative bg-white border border-gray-100 rounded-lg p-4 transition-all duration-300 hover:shadow-lg flex flex-col h-full">
             {/* Top Row: Badges & Wishlist */}
@@ -237,8 +251,8 @@ export default function CatalogProductCard({ product, variants, hideWishlist }: 
                     <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
                         <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                     </svg>
-                    <span className="text-sm font-medium text-gray-700">4.9</span>
-                    <span className="text-xs text-gray-400 ml-1">/ 24 відгуки</span>
+                    <span className="text-sm font-medium text-gray-700">{rating}</span>
+                    <span className="text-xs text-gray-400 ml-1">/ {reviews} відгуки</span>
                 </div>
 
                 {/* Cart Button */}
