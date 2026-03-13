@@ -6,11 +6,11 @@ export function escapeHtml(unsafe: string): string {
 }
 
 export async function sendTelegramMessage(text: string, parseMode: 'Markdown' | 'HTML' = 'HTML') {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_ADMIN_ID;
+    const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+    const chatId = process.env.TELEGRAM_ADMIN_ID?.trim();
 
     if (!token || !chatId) {
-        console.log('Telegram Bot Token or Admin ID is missing. Notifications disabled.');
+        console.warn('Telegram Bot Token or Admin ID is missing. Notifications disabled.');
         return false;
     }
 

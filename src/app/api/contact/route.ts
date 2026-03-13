@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { sendTelegramMessage, escapeHtml } from '@/lib/telegram';
 
 export async function POST(request: Request) {
     try {
@@ -19,27 +20,19 @@ export async function POST(request: Request) {
         });
 
         // Send Telegram notification
-        const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const chatId = process.env.TELEGRAM_ADMIN_ID;
+        const text = `
+📩 <b>Нове повідомлення з сайту!</b>
 
-        if (botToken && chatId) {
-            const text = `📩 *Нове повідомлення з сайту!*\n\n👤 *Ім'я:* ${escapeMarkdown(name)}\n📧 *Email:* ${escapeMarkdown(email)}\n\n💬 *Повідомлення:*\n${escapeMarkdown(message)}\n\n🕐 ${new Date().toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' })}`;
+👤 <b>Ім'я:</b> ${escapeHtml(name)}
+📧 <b>Email:</b> ${escapeHtml(email)}
 
-            try {
-                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text,
-                        parse_mode: 'Markdown',
-                    }),
-                });
-            } catch (tgError) {
-                console.error('Telegram notification failed:', tgError);
-                // Don't fail the request if Telegram fails
-            }
-        }
+💬 <b>Повідомлення:</b>
+${escapeHtml(message)}
+
+🕐 ${new Date().toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' })}
+`;
+
+        await sendTelegramMessage(text, 'HTML');
 
         return NextResponse.json({ success: true, id: contactMessage.id });
     } catch (error) {
@@ -51,6 +44,3 @@ export async function POST(request: Request) {
     }
 }
 
-function escapeMarkdown(text: string): string {
-    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-}
