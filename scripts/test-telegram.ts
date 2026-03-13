@@ -1,20 +1,19 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
+import 'dotenv/config';
 import { sendTelegramMessage } from '../src/lib/telegram';
 
-async function test() {
-    console.log('Sending test message to Telegram...');
-    const text = `
-✅ <b>Бот успішно підключено!</b>
-Тепер ви будете отримувати сповіщення про нові замовлення сюди.
-`;
-    const success = await sendTelegramMessage(text, 'HTML');
-    if (success) {
-        console.log('Test message sent successfully!');
+async function main() {
+    console.log('--- TELEGRAM TEST ---');
+    console.log('Token exists:', !!process.env.TELEGRAM_BOT_TOKEN);
+    console.log('Chat ID exists:', !!process.env.TELEGRAM_ADMIN_ID);
+
+    const testMessage = '<b>🔔 TEST NOTIFICATION</b>\nThis is a test message from Antigravity bot.';
+    const result = await sendTelegramMessage(testMessage, 'HTML');
+
+    if (result) {
+        console.log('✅ Telegram message sent successfully!');
     } else {
-        console.error('Failed to send test message.');
+        console.log('❌ Failed to send Telegram message.');
     }
 }
 
-test();
+main().catch(console.error);

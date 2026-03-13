@@ -26,7 +26,7 @@ export default function Header() {
     const [categories, setCategories] = useState<any[]>([]);
     const [collections, setCollections] = useState<any[]>([]);
     const [logoUrl, setLogoUrl] = useState('/logo.png');
-    const [instagramUrl, setInstagramUrl] = useState('https://instagram.com');
+    const [instagramUrl, setInstagramUrl] = useState('https://www.instagram.com/seriousmebel.ua/');
 
     useEffect(() => {
         setLogoUrl(`/logo.png?v=${Date.now()}`);
@@ -243,7 +243,7 @@ export default function Header() {
                         href={instagramUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hidden md:flex text-gray-500 hover:text-black transition-colors"
+                        className="flex text-gray-500 hover:text-black transition-colors"
                         title="Instagram"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -375,18 +375,18 @@ export default function Header() {
             {
                 isMenuOpen && (
                     <div className="md:hidden bg-white border-t border-gray-100 py-4 px-6 flex flex-col gap-4">
-                        <Link href="/catalog" className="text-sm text-gray-700">{t('header.catalog')}</Link>
-                        <Link href="/collections" className="text-sm text-gray-700">{t('header.collections')}</Link>
-                        <Link href="/about" className="text-sm text-gray-700">{t('header.about')}</Link>
-                        <Link href="/contacts" className="text-sm text-gray-700">{t('header.contacts')}</Link>
-                        <Link href="/cart" className="text-sm text-gray-700">{t('header.cart')} ({cartCount})</Link>
+                        <Link href="/catalog" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.catalog')}</Link>
+                        <Link href="/collections" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.collections')}</Link>
+                        <Link href="/about" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.about')}</Link>
+                        <Link href="/contacts" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.contacts')}</Link>
+                        <Link href="/cart" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.cart')} ({cartCount})</Link>
                         {session ? (
                             <>
-                                <Link href="/profile" className="text-sm text-gray-700">{t('header.profile')}</Link>
-                                <button onClick={() => signOut()} className="text-sm text-gray-500 text-left">{t('header.logout')}</button>
+                                <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.profile')}</Link>
+                                <button onClick={() => { signOut(); setIsMenuOpen(false); }} className="text-sm text-gray-500 text-left">{t('header.logout')}</button>
                             </>
                         ) : (
-                            <Link href="/auth/signin" className="text-sm text-gray-700">{t('header.login')}</Link>
+                            <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)} className="text-sm text-gray-700">{t('header.login')}</Link>
                         )}
                     </div>
                 )

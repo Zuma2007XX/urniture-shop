@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react';
 
 // ─── Manager Contact Links ─────────────────────────────────────────────────
 // Update these with the real manager contact URLs:
-const MANAGER_INSTAGRAM = 'https://instagram.com/seriousmebel';
+const MANAGER_INSTAGRAM = 'https://www.instagram.com/seriousmebel.ua/';
 const MANAGER_TELEGRAM = 'https://t.me/seriousmebel';
 const MANAGER_VIBER = 'viber://chat?number=%2B380000000000';
 

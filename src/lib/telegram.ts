@@ -31,10 +31,11 @@ export async function sendTelegramMessage(text: string, parseMode: 'Markdown' | 
 
         if (!response.ok) {
             const data = await response.json();
-            console.error('Failed to send Telegram message:', data);
+            console.error('Failed to send Telegram message. Status:', response.status, 'Response:', data);
             return false;
         }
 
+        console.log('Telegram message sent successfully.');
         return true;
     } catch (error) {
         console.error('Error sending Telegram notification:', error);
