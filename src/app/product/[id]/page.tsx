@@ -51,6 +51,33 @@ export default function ProductPage() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [siblings, setSiblings] = useState<Product[]>([]);
     const { language, t } = useLanguage();
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+    // Minimum swipe distance in pixels
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextImage();
+        } else if (isRightSwipe) {
+            prevImage();
+        }
+    };
 
     // Helper for normalizing strings (used in matching)
     // Remove all non-alphanumeric chars and lowercase
@@ -177,7 +204,12 @@ export default function ProductPage() {
 
                 <div className="flex flex-col gap-4 lg:sticky lg:top-24 h-fit">
                     {/* Main Image Carousel */}
-                    <div className="relative aspect-[4/5] bg-transparent rounded-sm overflow-hidden group">
+                    <div
+                        className="relative aspect-[4/5] bg-transparent rounded-sm overflow-hidden group"
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    >
                         {/* Show preview if available, otherwise active image */}
                         {(previewImage || images[activeImageIndex]) ? (
                             <Image
@@ -197,14 +229,14 @@ export default function ProductPage() {
                             <>
                                 <button
                                     onClick={(e) => { e.preventDefault(); prevImage(); }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-sm z-10"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 md:bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 shadow-sm z-10"
                                     aria-label="Previous image"
                                 >
                                     <ChevronLeft className="w-5 h-5 text-black" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.preventDefault(); nextImage(); }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-sm z-10"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 md:bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 shadow-sm z-10"
                                     aria-label="Next image"
                                 >
                                     <ChevronRight className="w-5 h-5 text-black" />
