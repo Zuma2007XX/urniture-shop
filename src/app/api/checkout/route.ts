@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendTelegramMessage, escapeHtml } from '@/lib/telegram';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -62,6 +62,7 @@ export async function POST(req: Request) {
                 lastName,
                 phone,
                 email: email || '',
+                orderNumber: orderNumber,
                 deliveryMethod: branch ? 'Nova Poshta (Department)' : 'Nova Poshta (Address)',
                 city: city || '',
                 branch: branch || '',
@@ -85,18 +86,11 @@ export async function POST(req: Request) {
             }
         });
 
-        // Set orderNumber via raw SQL
-        await prisma.$executeRawUnsafe(
-            `UPDATE "Order" SET "orderNumber" = ? WHERE "id" = ?`,
-            orderNumber,
-            order.id
-        );
-
         // Send Telegram Notification
         try {
             const itemsList = order.items.map((item: any) => {
-                const skuStr = item.product?.sku ? ` (Арт: ${item.product.sku})` : '';
-                return `• ${item.product?.name || '—'}${skuStr} — ${item.quantity} шт. × ${item.price} ₴`;
+                const skuStr = item.product?.sku ? ` (Арт: ${escapeHtml(item.product.sku)})` : '';
+                return `• ${escapeHtml(item.product?.name || '—')}${skuStr} — ${item.quantity} шт. × ${item.price} ₴`;
             }).join('\n');
 
             const paymentDisplay = paymentMethod === 'bank_transfer'
@@ -104,15 +98,15 @@ export async function POST(req: Request) {
                 : 'Післяплата (20грн + 2%)';
 
             const deliveryDisplay = branch
-                ? `Нова Пошта (Відділення): ${city}, №${branch}`
-                : `Нова Пошта (Адреса): ${city}, ${address}`;
+                ? `Нова Пошта (Відділення): ${escapeHtml(city || '')}, №${escapeHtml(branch || '')}`
+                : `Нова Пошта (Адреса): ${escapeHtml(city || '')}, ${escapeHtml(address || '')}`;
 
             const message = `
-<b>🛒 НОВА ЗАЯВКА #${orderNumber}</b>
+<b>🛒 НОВА ЗАЯВКА #${escapeHtml(orderNumber)}</b>
 
-<b>Клієнт:</b> ${firstName} ${lastName}
-<b>Телефон:</b> ${phone}
-${email ? `<b>Email:</b> ${email}` : ''}
+<b>Клієнт:</b> ${escapeHtml(firstName)} ${escapeHtml(lastName)}
+<b>Телефон:</b> ${escapeHtml(phone)}
+${email ? `<b>Email:</b> ${escapeHtml(email)}` : ''}
 
 <b>📍 Доставка:</b>
 ${deliveryDisplay}
@@ -125,7 +119,7 @@ ${itemsList}
 
 <b>💰 Всього: ${order.total.toLocaleString('uk-UA')} ₴</b>
 
-📱 Номер для менеджера: <b>#${orderNumber}</b>
+📱 Номер для менеджера: <b>#${escapeHtml(orderNumber)}</b>
 `;
             await sendTelegramMessage(message, 'HTML');
         } catch (tgError) {

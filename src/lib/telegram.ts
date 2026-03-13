@@ -1,3 +1,10 @@
+export function escapeHtml(unsafe: string): string {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
 export async function sendTelegramMessage(text: string, parseMode: 'Markdown' | 'HTML' = 'HTML') {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_ADMIN_ID;
