@@ -3,8 +3,10 @@ import prisma from '@/lib/prisma';
 import { sendTelegramMessage, escapeHtml } from '@/lib/telegram';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { createMonobankInvoice } from '@/lib/api/monobank';
+import { generateLiqPayDataAndSignature } from '@/lib/api/liqpay';
+import { pushOrderTo1C } from '@/lib/api/one-c';
 
-// Generate a unique 6-digit order number
 function generateOrderNumber(): string {
     return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -12,49 +14,21 @@ function generateOrderNumber(): string {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { firstName, lastName, phone, email, items, total, userId, city, branch, address, paymentMethod } = body;
+        const { 
+            firstName, lastName, phone, email, items, total, userId, 
+            city, cityRef, deliveryService, deliveryType, branch, branchRef, address, 
+            paymentMethod 
+        } = body;
 
-        // Basic validation
         if (!firstName || !lastName || !phone || !items || !items.length) {
-            return NextResponse.json(
-                { message: 'Будь ласка, заповніть обов\'язкові поля' },
-                { status: 400 }
-            );
+            return NextResponse.json({ message: 'Будь ласка, заповніть обов\'язкові поля' }, { status: 400 });
         }
-
-        console.log('[DEBUG CHECKOUT] Received payload:', { firstName, lastName, userId, total, city, paymentMethod });
 
         const orderNumber = generateOrderNumber();
-
-        // Determine user ID securely from server session
-        let validUserId = undefined;
         const session = await getServerSession(authOptions);
-        if (session?.user?.id) {
-            const userRecord = await prisma.user.findUnique({
-                where: { id: session.user.id },
-                select: { id: true },
-            });
-            if (userRecord) validUserId = session.user.id;
-        }
+        const validUserId = session?.user?.id || undefined;
 
-        const productIds = items.map((i: any) => i.id || i.productId);
-        const existingProducts = await prisma.product.findMany({
-            where: { id: { in: productIds } },
-            select: { id: true }
-        });
-        const existingProductIds = existingProducts.map(p => p.id);
-
-        const validItems = items.filter((item: any) =>
-            existingProductIds.includes(item.id || item.productId)
-        );
-
-        if (validItems.length === 0) {
-            return NextResponse.json(
-                { message: 'Помилка кошика: вибрані товари були видалені з бази даних. Будь ласка, очистіть кошик.' },
-                { status: 400 }
-            );
-        }
-
+        // Create the order in DB
         const order = await prisma.order.create({
             data: {
                 userId: validUserId,
@@ -63,77 +37,97 @@ export async function POST(req: Request) {
                 phone,
                 email: email || '',
                 orderNumber: orderNumber,
-                deliveryMethod: branch ? 'Nova Poshta (Department)' : 'Nova Poshta (Address)',
+                deliveryMethod: `${deliveryService === 'nova-poshta' ? 'Нова Пошта' : 'Міст Експрес'} (${deliveryType === 'branch' ? 'Відділення' : 'Адреса'})`,
                 city: city || '',
                 branch: branch || '',
                 address: address || '',
-                paymentMethod: paymentMethod || 'manager_confirm',
+                paymentMethod: paymentMethod,
                 total: Number(total) || 0,
                 status: 'pending',
                 items: {
-                    create: validItems.map((item: any) => ({
+                    create: items.map((item: any) => ({
                         productId: item.id || item.productId,
                         quantity: Number(item.quantity) || 1,
                         price: Number(item.price) || 0,
                         colorName: item.colorName || item.color || null,
                     }))
                 }
-            } as any,
+            },
             include: {
-                items: {
-                    include: { product: { select: { name: true, sku: true } } }
-                }
+                items: { include: { product: { select: { name: true, sku: true } } } }
             }
         });
 
-        // Send Telegram Notification
+        // 1. Export to 1C (Background/Placeholder)
         try {
-            const itemsList = order.items.map((item: any) => {
-                const skuStr = item.product?.sku ? ` (Арт: ${escapeHtml(item.product.sku)})` : '';
-                return `• ${escapeHtml(item.product?.name || '—')}${skuStr} — ${item.quantity} шт. × ${item.price} ₴`;
-            }).join('\n');
+            await pushOrderTo1C({
+                orderNumber,
+                clientName: `${firstName} ${lastName}`,
+                clientPhone: phone,
+                items: items.map((i: any) => ({ sku: i.sku || 'N/A', qty: i.quantity, price: i.price }))
+            });
+        } catch (e) {
+            console.error('1C Export failed:', e);
+        }
 
-            const paymentDisplay = paymentMethod === 'bank_transfer'
-                ? 'На розрахунковий рахунок'
-                : 'Післяплата (20грн + 2%)';
+        // 2. Handle Payment Gateways
+        let checkoutUrl = null;
 
-            const deliveryDisplay = branch
-                ? `Нова Пошта (Відділення): ${escapeHtml(city || '')}, №${escapeHtml(branch || '')}`
-                : `Нова Пошта (Адреса): ${escapeHtml(city || '')}, ${escapeHtml(address || '')}`;
+        if (paymentMethod === 'monobank') {
+            const monoResponse = await createMonobankInvoice({
+                amount: total,
+                orderId: order.id,
+                orderNumber: orderNumber,
+                items: items.map((i: any) => ({ name: i.name, qty: i.quantity, sum: i.price })),
+                redirectUrl: `${process.env.NEXTAUTH_URL}/checkout/success?order=${orderNumber}`
+            });
+            checkoutUrl = monoResponse.pageUrl;
+        } else if (paymentMethod === 'liqpay') {
+            const { data, signature } = generateLiqPayDataAndSignature({
+                public_key: process.env.LIQPAY_PUBLIC_KEY || '',
+                version: 3,
+                action: 'pay',
+                amount: total,
+                currency: 'UAH',
+                description: `Оплата замовлення #${orderNumber}`,
+                order_id: orderNumber,
+                result_url: `${process.env.NEXTAUTH_URL}/checkout/success?order=${orderNumber}`,
+                server_url: process.env.LIQPAY_CALLBACK_URL || ''
+            }, process.env.LIQPAY_PRIVATE_KEY || '');
+            
+            checkoutUrl = `https://www.liqpay.ua/api/3/checkout?data=${data}&signature=${signature}`;
+        }
+
+        // 3. Send Telegram Notification
+        try {
+            const itemsList = order.items.map((item: any) => 
+                `• ${escapeHtml(item.product?.name || '—')} — ${item.quantity} шт. × ${item.price} ₴`
+            ).join('\n');
 
             const message = `
-<b>🛒 НОВА ЗАЯВКА #${escapeHtml(orderNumber)}</b>
+<b>🛒 НОВЕ ЗАМОВЛЕННЯ #${escapeHtml(orderNumber)}</b>
 
 <b>Клієнт:</b> ${escapeHtml(firstName)} ${escapeHtml(lastName)}
 <b>Телефон:</b> ${escapeHtml(phone)}
-${email ? `<b>Email:</b> ${escapeHtml(email)}` : ''}
+<b>Доставка:</b> ${escapeHtml(order.deliveryMethod)}: ${escapeHtml(city)}, ${escapeHtml(branch || address)}
+<b>Оплата:</b> ${escapeHtml(paymentMethod)}
+<b>Сума:</b> ${order.total.toLocaleString()} ₴
 
-<b>📍 Доставка:</b>
-${deliveryDisplay}
-
-<b>💳 Оплата:</b>
-${paymentDisplay}
-
-<b>📦 Товари:</b>
+<b>Товари:</b>
 ${itemsList}
-
-<b>💰 Всього: ${order.total.toLocaleString('uk-UA')} ₴</b>
-
-📱 Номер для менеджера: <b>#${escapeHtml(orderNumber)}</b>
 `;
             await sendTelegramMessage(message, 'HTML');
         } catch (tgError) {
-            console.error('Telegram notification failed (non-fatal):', tgError);
+            console.error('Telegram failed:', tgError);
         }
 
         return NextResponse.json(
-            { message: 'Order created successfully', orderId: order.id, orderNumber },
+            { message: 'Order created', orderNumber, checkoutUrl },
             { status: 201 }
         );
 
     } catch (error) {
-        console.error('Error creating order:', error);
-        const msg = error instanceof Error ? error.message : 'Unknown error';
-        return NextResponse.json({ message: `Помилка: ${msg}` }, { status: 500 });
+        console.error('Checkout error:', error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
