@@ -233,7 +233,13 @@ export default function CheckoutPage() {
                                 <div className="space-y-6">
                                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between">
                                         <span className="font-bold uppercase text-sm tracking-wider">Доставка: Нова Пошта</span>
-                                        <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-xs italic">НП</div>
+                                        <div className="w-10 h-10 relative">
+                                            {/* Refined Nova Poshta Logo SVG */}
+                                            <svg viewBox="0 0 100 100" className="w-full h-full">
+                                                <rect width="100" height="100" rx="20" fill="#ED1C24" />
+                                                <path d="M25 25h15l20 30 20-30h15v50H80V45L60 75 40 45v30H25V25z" fill="white" />
+                                            </svg>
+                                        </div>
                                     </div>
 
                                     <div className="relative">
@@ -274,7 +280,7 @@ export default function CheckoutPage() {
                                                     const selected = warehouses.find(w => w.Ref === e.target.value);
                                                     setFormData(p => ({ ...p, branchRef: e.target.value, branch: selected?.Description || '' }));
                                                 }}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3"
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white appearance-none cursor-pointer focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
                                                 disabled={!formData.cityRef || isSearchingWarehouses}
                                             >
                                                 <option value="">Виберіть відділення...</option>
@@ -282,6 +288,11 @@ export default function CheckoutPage() {
                                                     <option key={idx} value={w.Ref}>{w.Description}</option>
                                                 ))}
                                             </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </div>
                                             {isSearchingWarehouses && <div className="absolute right-8 top-3.5 animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full" />}
                                         </div>
                                     ) : (
@@ -309,7 +320,7 @@ export default function CheckoutPage() {
                                         <span className="font-bold text-sm uppercase tracking-tight">Monobank</span>
                                     </button>
 
-                                    {/* LiqPay / Card */}
+                                    {/* LiqPay */}
                                     <button 
                                         type="button"
                                         onClick={() => setFormData(p => ({ ...p, paymentMethod: 'liqpay' }))}
@@ -320,7 +331,7 @@ export default function CheckoutPage() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m15.75-12H3.75A2.25 2.25 0 0 0 1.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25h16.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25Z" />
                                             </svg>
                                         </div>
-                                        <span className="font-bold text-sm uppercase tracking-tight">Карта / GPay</span>
+                                        <span className="font-bold text-sm uppercase tracking-tight">LiqPay</span>
                                     </button>
 
                                     {/* PrivatPay */}
@@ -333,20 +344,6 @@ export default function CheckoutPage() {
                                             <span className="font-black text-lg">24</span>
                                         </div>
                                         <span className="font-bold text-sm uppercase tracking-tight">PrivatPay</span>
-                                    </button>
-
-                                    {/* Bank Transfer */}
-                                    <button 
-                                        type="button"
-                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'bank_transfer' }))}
-                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'bank_transfer' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
-                                    >
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'bank_transfer' ? 'bg-white text-gray-700' : 'bg-gray-100 text-gray-700'}`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                            </svg>
-                                        </div>
-                                        <span className="font-bold text-sm uppercase tracking-tight">Рахунок IBAN</span>
                                     </button>
 
                                     {/* Cash on Delivery */}
