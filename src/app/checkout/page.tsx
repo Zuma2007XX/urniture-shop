@@ -296,37 +296,72 @@ export default function CheckoutPage() {
                                     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white text-sm">3</span>
                                     Спосіб оплати
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'monobank' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
-                                        <input type="radio" name="paymentMethod" value="monobank" checked={formData.paymentMethod === 'monobank'} onChange={handleInputChange} className="hidden" />
-                                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold">M</div>
-                                        <div>
-                                            <p className="font-bold text-sm">Monobank</p>
-                                            <p className="text-xs text-gray-500">Оплата карткою</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {/* Monobank */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'monobank' }))}
+                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'monobank' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'monobank' ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                                            <span className="font-black text-lg">M</span>
                                         </div>
-                                    </label>
-                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'privatpay' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
-                                        <input type="radio" name="paymentMethod" value="privatpay" checked={formData.paymentMethod === 'privatpay'} onChange={handleInputChange} className="hidden" />
-                                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
-                                        <div>
-                                            <p className="font-bold text-sm">PrivatPay</p>
-                                            <p className="text-xs text-gray-500">Швидка оплата Приват24</p>
+                                        <span className="font-bold text-sm uppercase tracking-tight">Monobank</span>
+                                    </button>
+
+                                    {/* LiqPay / Card */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'liqpay' }))}
+                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'liqpay' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'liqpay' ? 'bg-white text-green-600' : 'bg-green-600 text-white'}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m15.75-12H3.75A2.25 2.25 0 0 0 1.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25h16.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25Z" />
+                                            </svg>
                                         </div>
-                                    </label>
-                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'bank_transfer' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
-                                        <input type="radio" name="paymentMethod" value="bank_transfer" checked={formData.paymentMethod === 'bank_transfer'} onChange={handleInputChange} className="hidden" />
-                                        <div>
-                                            <p className="font-bold text-sm">Рахунок</p>
-                                            <p className="text-xs text-gray-500">На реквізити</p>
+                                        <span className="font-bold text-sm uppercase tracking-tight">Карта / GPay</span>
+                                    </button>
+
+                                    {/* PrivatPay */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'privatpay' }))}
+                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'privatpay' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'privatpay' ? 'bg-white text-green-700' : 'bg-green-700 text-white'}`}>
+                                            <span className="font-black text-lg">24</span>
                                         </div>
-                                    </label>
-                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'cod' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
-                                        <input type="radio" name="paymentMethod" value="cod" checked={formData.paymentMethod === 'cod'} onChange={handleInputChange} className="hidden" />
-                                        <div>
-                                            <p className="font-bold text-sm">Післяплата</p>
-                                            <p className="text-xs text-gray-500">При отриманні</p>
+                                        <span className="font-bold text-sm uppercase tracking-tight">PrivatPay</span>
+                                    </button>
+
+                                    {/* Bank Transfer */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'bank_transfer' }))}
+                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'bank_transfer' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'bank_transfer' ? 'bg-white text-gray-700' : 'bg-gray-100 text-gray-700'}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                            </svg>
                                         </div>
-                                    </label>
+                                        <span className="font-bold text-sm uppercase tracking-tight">Рахунок IBAN</span>
+                                    </button>
+
+                                    {/* Cash on Delivery */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, paymentMethod: 'cod' }))}
+                                        className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all h-32 ${formData.paymentMethod === 'cod' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${formData.paymentMethod === 'cod' ? 'bg-white text-amber-600' : 'bg-amber-100 text-amber-600'}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75m0 1.5v.75m0 1.5v.75m0 1.5V15m1.5 1.5h1.5m1.5 0h1.5m1.5 0h1.5m1.5 0h1.5m1.5 0h1.5m1.5 0h1.5m1.5 0h1.5m1.5 0h1.5M6.75 20.25v.75m0-1.5v-.75m0-1.5v-.75m0-1.5v-.75m0-1.5V15m6 5.25v.75m0-1.5v-.75m0-1.5v-.75m0-1.5v-.75m0-1.5V15m6 5.25v.75m0-1.5v-.75m0-1.5v-.75m0-1.5v-.75m0-1.5V15" />
+                                            </svg>
+                                        </div>
+                                        <span className="font-bold text-sm uppercase tracking-tight">Післяплата</span>
+                                    </button>
                                 </div>
                             </section>
 
