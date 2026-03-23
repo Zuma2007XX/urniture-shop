@@ -42,9 +42,9 @@ export default function CheckoutPage() {
 
     // Fetch cities when typing
     useEffect(() => {
-        if (formData.city.length < 2) {
+        if (!formData.city || formData.city.length < 3 || formData.cityRef) {
             setCities([]);
-            setShowCityDropdown(false); // Hide dropdown if query is too short
+            if (!formData.cityRef) setShowCityDropdown(false);
             return;
         }
 
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
         }, 500);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [formData.city, formData.deliveryService]);
+    }, [formData.city, formData.cityRef, formData.deliveryService]);
 
     // Fetch warehouses when city is selected
     useEffect(() => {
@@ -90,7 +90,15 @@ export default function CheckoutPage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'city') {
+                next.cityRef = '';
+                next.branch = '';
+                next.branchRef = '';
+            }
+            return next;
+        });
     };
 
     const handleCitySelect = (city: any) => {
