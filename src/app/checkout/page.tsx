@@ -231,10 +231,10 @@ export default function CheckoutPage() {
                                 </h3>
 
                                 <div className="space-y-6">
-                                    <select name="deliveryService" value={formData.deliveryService} onChange={handleInputChange} className="w-full border border-gray-200 rounded-xl px-4 py-3">
-                                        <option value="nova-poshta">Нова Пошта</option>
-                                        <option value="meest">Міст Експрес</option>
-                                    </select>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+                                        <span className="font-bold uppercase text-sm tracking-wider">Доставка: Нова Пошта</span>
+                                        <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-xs italic">НП</div>
+                                    </div>
 
                                     <div className="relative">
                                         <input
