@@ -305,12 +305,12 @@ export default function CheckoutPage() {
                                             <p className="text-xs text-gray-500">Оплата карткою</p>
                                         </div>
                                     </label>
-                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'liqpay' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
-                                        <input type="radio" name="paymentMethod" value="liqpay" checked={formData.paymentMethod === 'liqpay'} onChange={handleInputChange} className="hidden" />
-                                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">L</div>
+                                    <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'privatpay' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>
+                                        <input type="radio" name="paymentMethod" value="privatpay" checked={formData.paymentMethod === 'privatpay'} onChange={handleInputChange} className="hidden" />
+                                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
                                         <div>
-                                            <p className="font-bold text-sm">LiqPay</p>
-                                            <p className="text-xs text-gray-500">Оплата карткою (Приват)</p>
+                                            <p className="font-bold text-sm">PrivatPay</p>
+                                            <p className="text-xs text-gray-500">Швидка оплата Приват24</p>
                                         </div>
                                     </label>
                                     <label className={`p-4 border rounded-xl cursor-pointer flex items-center gap-3 ${formData.paymentMethod === 'bank_transfer' ? 'border-black ring-1 ring-black' : 'border-gray-200'}`}>

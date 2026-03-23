@@ -82,6 +82,21 @@ export async function POST(req: Request) {
                 redirectUrl: `${process.env.NEXTAUTH_URL}/checkout/success?order=${orderNumber}`
             });
             checkoutUrl = monoResponse.pageUrl;
+        } else if (paymentMethod === 'privatpay') {
+            const { data, signature } = generateLiqPayDataAndSignature({
+                public_key: process.env.LIQPAY_PUBLIC_KEY || '',
+                version: 3,
+                action: 'pay',
+                amount: total,
+                currency: 'UAH',
+                description: `Оплата замовлення #${orderNumber}`,
+                order_id: orderNumber,
+                result_url: `${process.env.NEXTAUTH_URL}/checkout/success?order=${orderNumber}`,
+                server_url: process.env.LIQPAY_CALLBACK_URL || '',
+                paytypes: 'privatpay' // Force PrivatPay method
+            } as any, process.env.LIQPAY_PRIVATE_KEY || '');
+            
+            checkoutUrl = `https://www.liqpay.ua/api/3/checkout?data=${data}&signature=${signature}`;
         } else if (paymentMethod === 'liqpay') {
             const { data, signature } = generateLiqPayDataAndSignature({
                 public_key: process.env.LIQPAY_PUBLIC_KEY || '',
