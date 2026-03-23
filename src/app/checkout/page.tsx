@@ -233,12 +233,13 @@ export default function CheckoutPage() {
                                 <div className="space-y-6">
                                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between">
                                         <span className="font-bold uppercase text-sm tracking-wider">Доставка: Нова Пошта</span>
-                                        <div className="w-10 h-10 relative">
-                                            {/* Refined Nova Poshta Logo SVG */}
-                                            <svg viewBox="0 0 100 100" className="w-full h-full">
-                                                <rect width="100" height="100" rx="20" fill="#ED1C24" />
-                                                <path d="M25 25h15l20 30 20-30h15v50H80V45L60 75 40 45v30H25V25z" fill="white" />
-                                            </svg>
+                                        <div className="w-16 h-8 relative">
+                                            {/* Official Nova Post Logo */}
+                                            <img 
+                                                src="/images/nova-post-logo.png" 
+                                                alt="Nova Post" 
+                                                className="w-full h-full object-contain"
+                                            />
                                         </div>
                                     </div>
 
