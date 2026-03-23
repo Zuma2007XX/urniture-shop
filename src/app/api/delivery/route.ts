@@ -1,4 +1,3 @@
-```javascript
 import { NextResponse } from 'next/server';
 import { fetchNPCities, fetchNPWarehouses } from '@/lib/api/nova-poshta';
 
@@ -34,4 +33,3 @@ export async function GET(req: Request) {
         return NextResponse.json({ message: 'Error fetching delivery data' }, { status: 500 });
     }
 }
-```
